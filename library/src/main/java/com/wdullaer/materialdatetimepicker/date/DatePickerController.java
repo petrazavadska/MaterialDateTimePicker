@@ -39,7 +39,7 @@ public interface DatePickerController {
     boolean isThemeDark();
 
     int getAccentColor();
-    
+
     boolean isHighlighted(int year, int month, int day);
 
     int getFirstDayOfWeek();
@@ -55,6 +55,12 @@ public interface DatePickerController {
     boolean isOutOfRange(int year, int month, int day);
 
     void tryVibrate();
+
+    void focusYear();
+
+    void focusMonthDays();
+
+    void focusDialogButtons();
 
     TimeZone getTimeZone();
 
