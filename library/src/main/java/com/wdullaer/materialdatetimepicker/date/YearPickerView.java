@@ -19,6 +19,7 @@ package com.wdullaer.materialdatetimepicker.date;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.StateListDrawable;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,8 +52,8 @@ public class YearPickerView extends ListView implements OnItemClickListener, OnD
         setLayoutParams(frame);
         Resources res = context.getResources();
         mViewSize = mController.getVersion() == DatePickerDialog.Version.VERSION_1
-            ? res.getDimensionPixelOffset(R.dimen.mdtp_date_picker_view_animator_height)
-            : res.getDimensionPixelOffset(R.dimen.mdtp_date_picker_view_animator_height_v2);
+                ? res.getDimensionPixelOffset(R.dimen.mdtp_date_picker_view_animator_height)
+                : res.getDimensionPixelOffset(R.dimen.mdtp_date_picker_view_animator_height_v2);
         mChildSize = res.getDimensionPixelOffset(R.dimen.mdtp_year_label_height);
         setVerticalFadingEdgeEnabled(true);
         setFadingEdgeLength(mChildSize / 3);
@@ -61,6 +62,7 @@ public class YearPickerView extends ListView implements OnItemClickListener, OnD
         setSelector(new StateListDrawable());
         setDividerHeight(0);
         onDateChanged();
+        setItemsCanFocus(true);
     }
 
     private void init() {
@@ -125,17 +127,64 @@ public class YearPickerView extends ListView implements OnItemClickListener, OnD
                 v = (TextViewWithCircularIndicator) convertView;
             } else {
                 v = (TextViewWithCircularIndicator) LayoutInflater.from(parent.getContext())
-                  .inflate(R.layout.mdtp_year_label_text_view, parent, false);
+                        .inflate(R.layout.mdtp_year_label_text_view, parent, false);
                 v.setAccentColor(mController.getAccentColor(), mController.isThemeDark());
             }
             int year = mMinYear + position;
             boolean selected = mController.getSelectedDay().year == year;
-            v.setText(String.format(mController.getLocale(),"%d", year));
+            v.setText(String.format(mController.getLocale(), "%d", year));
             v.drawIndicator(selected);
             v.requestLayout();
             if (selected) {
                 mSelectedView = v;
             }
+            v.setFocusable(true);
+            v.setFocusableInTouchMode(true);
+            if (selected) {
+                mSelectedView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSelectedView.requestFocus();
+                    }
+                });
+            }
+            v.setOnFocusChangeListener(new OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        TextViewWithCircularIndicator focusedView = (TextViewWithCircularIndicator) v;
+                        if (focusedView != mSelectedView) {
+                            if (mSelectedView != null) {
+                                mSelectedView.drawIndicator(false);
+                                mSelectedView.requestLayout();
+                            }
+                            focusedView.drawIndicator(true);
+                            focusedView.requestLayout();
+                            mSelectedView = focusedView;
+                        }
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+            });
+            v.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    performItemClick(v, position, 0);
+                }
+            });
+            v.setOnKeyListener(new OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                        mController.focusMonthDays();
+                        return true;
+                    } else if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        mController.focusDialogButtons();
+                        return true;
+                    }
+                    return false;
+                }
+            });
             return v;
         }
     }
