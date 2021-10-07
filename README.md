@@ -4,6 +4,8 @@
 ![Maven Central](https://img.shields.io/maven-central/v/com.wdullaer/materialdatetimepicker.svg)
 ![Build Status](https://travis-ci.org/wdullaer/MaterialDateTimePicker.svg?branch=master)
 
+**JitPack custom release**
+[![JitPack](https://jitpack.io/v/petrazavadska/MaterialDateTimePicker.svg)](https://jitpack.io/#petrazavadska/MaterialDateTimePicker)
 
 Material DateTime Picker tries to offer you the date and time pickers as shown in [the Material Design spec](http://www.google.com/design/spec/components/pickers.html), with an
 easy themable API.
